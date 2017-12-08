@@ -88,11 +88,8 @@ exports.getArrayBuffer = function(requestParameters: RequestParameters, callback
         callback(new Error(xhr.statusText));
     };
     xhr.onload = function() {
-        const response: ArrayBuffer = xhr.response;
-        if (response.byteLength === 0 && xhr.status === 200) {
-            return callback(new Error('http status 200 returned without content.'));
-        }
-        if (xhr.status >= 200 && xhr.status < 300 && xhr.response) {
+        const response: ArrayBuffer = xhr.status !== 404 ? xhr.response : new ArrayBuffer();
+        if ((xhr.status >= 200 && xhr.status < 300 && xhr.response) || xhr.status === 404) {
             callback(null, {
                 data: response,
                 cacheControl: xhr.getResponseHeader('Cache-Control'),

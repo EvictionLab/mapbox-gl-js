@@ -3,6 +3,8 @@ const Coordinate = require('../geo/coordinate');
 const Texture = require('./texture');
 const EXTENT = require('../data/extent');
 const mat4 = require('@mapbox/gl-matrix').mat4;
+const StencilMode = require('../gl/stencil_mode');
+const DepthMode = require('../gl/depth_mode');
 
 import type Painter from './painter';
 import type SourceCache from '../source/source_cache';
@@ -16,8 +18,9 @@ function drawHillshade(painter: Painter, sourceCache: SourceCache, layer: Hillsh
 
     const context = painter.context;
 
-    painter.setDepthSublayer(0);
-    context.stencilTest.set(false);
+    context.setDepthMode(painter.depthModeForSublayer(0, DepthMode.ReadOnly));
+    context.setStencilMode(StencilMode.disabled());
+    context.setColorMode(painter.colorModeForRenderPass());
 
     for (const tileID of tileIDs) {
         const tile = sourceCache.getTile(tileID);
@@ -85,7 +88,7 @@ function renderHillshade(painter, tile, layer) {
     } else {
         const buffer = painter.rasterBoundsBuffer;
         const vao = painter.rasterBoundsVAO;
-        vao.bind(context, program, buffer);
+        vao.bind(context, program, buffer, []);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
     }
 }
@@ -156,7 +159,7 @@ function prepareHillshade(painter, tile) {
         const buffer = painter.rasterBoundsBuffer;
         const vao = painter.rasterBoundsVAO;
 
-        vao.bind(context, program, buffer);
+        vao.bind(context, program, buffer, []);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, buffer.length);
 
         tile.needsHillshadePrepare = false;

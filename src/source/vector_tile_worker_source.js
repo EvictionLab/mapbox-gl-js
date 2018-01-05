@@ -44,7 +44,7 @@ function loadVectorTile(params: WorkerTileParameters, callback: LoadVectorDataCa
             callback(err);
         } else if (response) {
             callback(null, {
-                vectorTile: new vt.VectorTile(new Protobuf(response.data)),
+                vectorTile: new vt.VectorTile(response.data.byteLength > 0 ? new Protobuf(response.data) : new Protobuf()),
                 rawData: response.data,
                 cacheControl: response.cacheControl,
                 expires: response.expires
